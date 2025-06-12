@@ -1,0 +1,99 @@
+---
+- name: Install Minecraft Server
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Ensure python3-pip is installed
+      apt:
+        name: python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Install boto3 python module for user
+      pip:
+        name:
+          - boto3
+          - botocore
+        executable: pip3
+        state: present
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install OpenJDK 21 (required for Minecraft)
+      become: true
+      ansible.builtin.apt:
+        name: openjdk-21-jre-headless
+        state: present
+
+    - name: Create minecraft user
+      become: true
+      ansible.builtin.user:
+        name: minecraft
+        shell: /bin/bash
+        create_home: yes
+
+    - name: Create Minecraft server directory
+      become: true
+      ansible.builtin.file:
+        path: /opt/minecraft
+        state: directory
+        owner: minecraft
+        group: minecraft
+        mode: '0755'
+
+    - name: Download Minecraft server jar
+      become: true
+      ansible.builtin.get_url:
+        url: https://piston-data.mojang.com/v1/objects/e6ec2f64e6080b9b5d9b471b291c33cc7f509733/server.jar
+        dest: /opt/minecraft/server.jar
+        owner: minecraft
+        group: minecraft
+        mode: '0644'
+
+    - name: Accept Minecraft EULA
+      become: true
+      ansible.builtin.copy:
+        dest: /opt/minecraft/eula.txt
+        content: "eula=true\n"
+        owner: minecraft
+        group: minecraft
+        mode: '0644'
+
+    - name: Create systemd service for Minecraft
+      become: true
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/minecraft.service
+        content: |
+          [Unit]
+          Description=Minecraft Server
+          After=network.target
+
+          [Service]
+          User=minecraft
+          WorkingDirectory=/opt/minecraft
+          ExecStart=/usr/bin/java -Xmx1024M -Xms1024M -jar server.jar nogui
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target
+        mode: '0644'
+
+    - name: Reload systemd daemon
+      become: true
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable Minecraft service to start at boot
+      become: true
+      ansible.builtin.systemd:
+        name: minecraft
+        enabled: yes
+
+    - name: Start Minecraft service
+      become: true
+      ansible.builtin.systemd:
+        name: minecraft
+        state: started
