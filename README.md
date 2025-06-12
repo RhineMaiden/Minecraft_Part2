@@ -8,9 +8,6 @@ This project automates the deployment of a Minecraft Java Edition server on AWS 
 
 Before using the code in this repository you must:
 
-//TODO find links to guides
-//TODO include versions
-
 - Install Terraform v1.5.0+ [Installation Guide](https://developer.hashicorp.com/terraform/install)
 - Install Ansible v2.14+ [Installation Guide](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 - Install AWS CLI v2.0+ [Installation Guide](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
@@ -50,7 +47,8 @@ Follow these steps to ully automate a Minecraft server on AWS using Terraform an
 
 1. Clone the repository
     ```
-    //TODO
+    git clone https://github.com/RhineMaiden/Minecraft_Part2
+    ```
 2. Navigate to the terraform folder
     ```
     cd Minecraft_Part2/terraform
